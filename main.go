@@ -19,8 +19,12 @@ import (
 
 func main() {
 	// 1. Инициализация хранилища
-	dsn := "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable"
-	st, err := storage.New(dsn)
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		connStr = "postgres://user:password@localhost:5432/crypto_db"
+	}
+
+	st, err := storage.New(connStr)
 	if err != nil {
 		log.Fatal("Ошибка подключения к БД:", err)
 	}

@@ -4,10 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"my_crypto_project/internal/models"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
+
+const createTableSQL = `
+CREATE TABLE IF NOT EXISTS prices (
+    id SERIAL PRIMARY KEY,
+    exchange TEXT NOT NULL,
+    price NUMERIC NOT NULL,
+    timestamp TIMESTAMP NOT NULL
+);`
 
 type Storage struct {
 	db *sql.DB
@@ -18,10 +27,14 @@ func New(dsn string) (*Storage, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := db.Ping(); err != nil {
+	_, err = db.Exec(createTableSQL)
+	if err != nil {
+		log.Printf("Не удалось создать таблицу: %v", err)
 		return nil, err
 	}
+
 	return &Storage{db: db}, nil
+
 }
 
 func (s *Storage) SavePrice(ctx context.Context, p models.PriceResult) error {
